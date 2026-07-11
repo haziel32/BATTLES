@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pokémon Gen 1 - Battle Simulator</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="game-container">
+
+  <!-- ============ PANTALLA: MENU PRINCIPAL ============ -->
+  <section id="screen-title" class="screen active">
+    <div class="title-wrap">
+      <h1 class="pixel-logo">
+        <span class="logo-pokemon">POKÉMON</span>
+        <span class="logo-sub">GEN 1 · BATTLE</span>
+      </h1>
+      <div class="title-sprites">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/6.png" alt="Charizard" class="title-sprite bounce">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/9.png" alt="Blastoise" class="title-sprite bounce delay1">
+        <img src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/3.png" alt="Venusaur" class="title-sprite bounce delay2">
+      </div>
+    </div>
+
+    <nav class="menu-list" id="main-menu">
+      <button class="menu-item selected" data-action="new-battle">▶ Nuevo Combate</button>
+      <button class="menu-item" data-action="pokedex">▶ Seleccionar Equipo (Pokédex)</button>
+      <button class="menu-item" data-action="how-to-play">▶ Cómo Jugar</button>
+      <button class="menu-item" data-action="credits">▶ Créditos</button>
+    </nav>
+
+    <p class="hint-text">Usa ↑ ↓ y Enter, o haz clic</p>
+  </section>
+
+  <!-- ============ PANTALLA: COMO JUGAR ============ -->
+  <section id="screen-help" class="screen">
+    <div class="panel-box scroll-box">
+      <h2>Cómo Jugar</h2>
+      <ul class="help-list">
+        <li><b>Objetivo:</b> Debilita los 6 Pokémon del equipo rival antes de que debiliten los tuyos.</li>
+        <li><b>Turnos:</b> El Pokémon con mayor Velocidad ataca primero (salvo prioridad especial).</li>
+        <li><b>Tipos:</b> Ataques Súper Efectivos hacen x2 daño, No muy efectivos x0.5, e Inmunes x0.</li>
+        <li><b>STAB:</b> Si el ataque es del mismo tipo que el Pokémon, hace x1.5 de daño.</li>
+        <li><b>Crítico:</b> Hay probabilidad de golpe crítico (x2 daño), depende de la Velocidad base.</li>
+        <li><b>Estados:</b> Veneno, Parálisis, Sueño, Quemadura y Congelación afectan el combate.</li>
+        <li><b>Cambio:</b> Puedes cambiar de Pokémon en vez de atacar durante tu turno.</li>
+      </ul>
+      <h3>Controles</h3>
+      <p><b>Jugador 1 (vs Bot / Hotseat):</b> Flechas para moverte, Enter o Espacio para confirmar.</p>
+      <p><b>Jugador 2 (Hotseat):</b> WASD para moverte, Shift o Ctrl para confirmar.</p>
+      <button class="menu-item back-btn" data-action="back-title">◀ Volver</button>
+    </div>
+  </section>
+
+  <!-- ============ PANTALLA: CREDITOS ============ -->
+  <section id="screen-credits" class="screen">
+    <div class="panel-box scroll-box">
+      <h2>Créditos</h2>
+      <p>Simulador de combates estilo Pokémon Rojo/Azul (Gen 1).</p>
+      <p>Sprites: PokeAPI / PokeAPI Sprites (GitHub, uso público).</p>
+      <p>Diseño, código y mecánicas: Proyecto educativo fan-made.</p>
+      <p>Pokémon es una marca registrada de Nintendo/Game Freak/Creatures Inc.<br>Este proyecto es no oficial y sin fines de lucro.</p>
+      <button class="menu-item back-btn" data-action="back-title">◀ Volver</button>
+    </div>
+  </section>
+
+  <!-- ============ PANTALLA: MODO DE JUEGO ============ -->
+  <section id="screen-mode" class="screen">
+    <div class="panel-box">
+      <h2>Elige Modo de Juego</h2>
+      <nav class="menu-list" id="mode-menu">
+        <button class="menu-item selected" data-mode="bot">▶ Vs Bot (IA)</button>
+        <button class="menu-item" data-mode="hotseat">▶ Multijugador Local (Hotseat)</button>
+      </nav>
+      <button class="menu-item back-btn" data-action="back-title">◀ Volver</button>
+    </div>
+  </section>
+
+  <!-- ============ PANTALLA: POKEDEX / TEAM BUILDER ============ -->
+  <section id="screen-pokedex" class="screen">
+    <div class="pokedex-header">
+      <h2 id="pokedex-title">Selecciona tu equipo (0/6)</h2>
+      <div class="team-preview" id="team-preview-p1"></div>
+    </div>
+
+    <div class="pokedex-body">
+      <div class="pokedex-grid" id="pokedex-grid"></div>
+
+      <div class="pokedex-detail" id="pokedex-detail">
+        <p class="detail-placeholder">Selecciona un Pokémon para ver sus detalles.</p>
+      </div>
+    </div>
+
+    <div class="pokedex-footer">
+      <button class="menu-item back-btn" data-action="back-title">◀ Salir</button>
+      <button class="menu-item" id="btn-random-team">🎲 Equipo Aleatorio</button>
+      <button class="menu-item" id="btn-confirm-team" disabled>✔ Confirmar Equipo</button>
+    </div>
+  </section>
+
+  <!-- ============ PANTALLA: BATALLA ============ -->
+  <section id="screen-battle" class="screen">
+    <div class="battle-scene">
+      <canvas id="battle-canvas" width="480" height="320"></canvas>
+
+      <!-- HUD enemigo -->
+      <div class="hud hud-enemy">
+        <div class="hud-name-row">
+          <span class="hud-name" id="enemy-name">---</span>
+          <span class="hud-lv" id="enemy-lv">Nv.50</span>
+        </div>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="enemy-hp-bar"></div>
+        </div>
+        <div class="status-badges" id="enemy-status"></div>
+      </div>
+
+      <!-- HUD jugador -->
+      <div class="hud hud-player">
+        <div class="hud-name-row">
+          <span class="hud-name" id="player-name">---</span>
+          <span class="hud-lv" id="player-lv">Nv.50</span>
+        </div>
+        <div class="hp-bar-outer">
+          <div class="hp-bar-inner" id="player-hp-bar"></div>
+        </div>
+        <div class="hp-numeric"><span id="player-hp-current">0</span>/<span id="player-hp-max">0</span></div>
+        <div class="status-badges" id="player-status"></div>
+      </div>
+    </div>
+
+    <!-- Caja de texto / menú de acción -->
+    <div class="battle-textbox-area">
+      <div class="battle-textbox" id="battle-textbox">
+        <p id="battle-text"></p>
+      </div>
+
+      <div class="battle-action-menu" id="battle-action-menu">
+        <div class="action-grid">
+          <button class="action-btn selected" data-action="fight">LUCHAR</button>
+          <button class="action-btn" data-action="pokemon">POKÉMON</button>
+          <button class="action-btn" data-action="run">HUIR</button>
+        </div>
+      </div>
+
+      <div class="battle-moves-menu hidden" id="battle-moves-menu">
+        <div class="moves-grid" id="moves-grid"></div>
+        <div class="move-info-bar">
+          <span id="move-info-type" class="type-badge">-</span>
+          <span id="move-info-pp">PP -/-</span>
+        </div>
+        <button class="menu-item small-btn" id="btn-move-back">◀ Volver</button>
+      </div>
+
+      <div class="battle-switch-menu hidden" id="battle-switch-menu">
+        <div class="switch-grid" id="switch-grid"></div>
+        <button class="menu-item small-btn" id="btn-switch-back">◀ Volver</button>
+      </div>
+    </div>
+
+    <div class="turn-indicator" id="turn-indicator">Turno de Jugador 1</div>
+  </section>
+
+  <!-- ============ PANTALLA: FIN DE PARTIDA ============ -->
+  <section id="screen-end" class="screen">
+    <div class="panel-box end-panel">
+      <h2 id="end-title">¡Victoria!</h2>
+      <p id="end-subtitle">Has ganado el combate.</p>
+      <button class="menu-item" data-action="rematch">▶ Revancha</button>
+      <button class="menu-item" data-action="menu-team">▶ Nuevo Equipo</button>
+      <button class="menu-item back-btn" data-action="back-title">◀ Menú Principal</button>
+    </div>
+  </section>
+
+</div>
+
+<audio id="sfx-select" preload="none" src="assets/sounds/select.mp3"></audio>
+<audio id="sfx-confirm" preload="none" src="assets/sounds/confirm.mp3"></audio>
+<audio id="sfx-hit" preload="none" src="assets/sounds/hit.mp3"></audio>
+<audio id="sfx-faint" preload="none" src="assets/sounds/faint.mp3"></audio>
+<audio id="bgm-title" preload="none" loop src="assets/sounds/title-theme.mp3"></audio>
+<audio id="bgm-battle" preload="none" loop src="assets/sounds/battle-theme.mp3"></audio>
+<!-- Nota: los archivos de audio son opcionales. Si no existen, el juego funciona
+     igualmente en silencio (los errores de carga se capturan en game.js). -->
+
+<script src="js/game.js"></script>
+</body>
+</html>
